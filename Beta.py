@@ -4,6 +4,9 @@ from statsmodels import regression
 import statsmodels.api as smf
 from statsmodels.tools.tools import add_constant
 import matplotlib.pyplot as plt
+from scipy.stats import pearsonr
+
+########################################### Covid19 #######################################################
 
 #### Importando dados covid19 Brasil
 df = pd.read_csv('HIST_PAINEL_COVIDBR_2020_Parte1_08ago2021.csv', sep=';', index_col='data', parse_dates=True)
@@ -18,7 +21,11 @@ covid.sort_index(inplace=True)
 covid = covid[covid['estado'].isna()]
 covid_br = covid['obitosNovos']
 covid_br = pd.DataFrame(covid_br)
+covid_19 = covid_br.loc[:'2020-12-31']
+covid_20 = covid_br.loc['2021-01-01':]
+print(covid_20.index)
 
+####################################### Ibovespa ##########################################################
 
 #### Importando dados ibov
 stocks = pd.read_excel('economatica.xlsx', parse_dates=True, index_col=0)
@@ -31,7 +38,7 @@ def columns(df): #renomeando colunas com as ações
 columns(stocks)
 
 
-ibov_cov = pd.concat([stocks, covid_br], axis=1) #concatenando as bases
+ibov_cov = pd.concat([stocks, covid_20], axis=1) #concatenando as bases
 ibov_cov.dropna(inplace=True)
 ibov_pct = ibov_cov.pct_change().dropna() #tratando os dados para a regressão
 ibov_pct = ibov_pct.iloc[5:]
@@ -43,13 +50,29 @@ def reg(x, y): #função da regressão linear
     beta = fit.params[1]
     return beta
 
+
+#### Calculo dos betas
 dict = {}
 
 for i in stocks.columns:
+    #regressão entre as ações e os óbitos
     x = reg(ibov_pct[i], ibov_pct['obitosNovos'])
     dict[i] = x
 
+dict = pd.DataFrame(dict, index=[0])
+dict.to_excel('Beta.xlsx')
+
+#### Correlação das variaveis
+correl = {}
+
+for i in stocks.columns:
+    x = pearsonr(ibov_pct[i], ibov_pct['obitosNovos'])
+    correl[i] = x
+
+print(correl)
+
+'''
 plt.scatter(ibov_pct['VALE3'], ibov_pct['obitosNovos'])
 plt.show()
-
+'''
 
