@@ -38,7 +38,7 @@ def columns(df): #renomeando colunas com as ações
 columns(stocks)
 
 
-ibov_cov = pd.concat([stocks, covid_20], axis=1) #concatenando as bases
+ibov_cov = pd.concat([stocks, covid_19], axis=1) #concatenando as bases
 ibov_cov.dropna(inplace=True)
 ibov_pct = ibov_cov.pct_change().dropna() #tratando os dados para a regressão
 ibov_pct = ibov_pct.iloc[5:]
@@ -60,7 +60,7 @@ for i in stocks.columns:
     dict[i] = x
 
 dict = pd.DataFrame(dict, index=[0])
-dict.to_excel('Beta.xlsx')
+dict.to_excel('Beta_21.xlsx')
 
 #### Correlação das variaveis
 correl = {}
@@ -69,7 +69,6 @@ for i in stocks.columns:
     x = pearsonr(ibov_pct[i], ibov_pct['obitosNovos'])
     correl[i] = x
 
-print(correl)
 
 '''
 plt.scatter(ibov_pct['VALE3'], ibov_pct['obitosNovos'])
